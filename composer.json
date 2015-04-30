@@ -1,0 +1,22 @@
+{
+    "name": "sanderheijselaar/ezpdo",
+    "description": " A simple PHP PDO class for MySQL ",
+    "license": "MIT",
+    "keywords": ["php", "pdo", "mysql", "sqlite", "postgresql"],
+    "authors": [
+        {
+            "name": "Sander Heijselaar",
+            "email": "info@xl-and.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "4.6.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "SanderHeijselaar\\EzPdo\\": "src"
+        }
+    }
+}
