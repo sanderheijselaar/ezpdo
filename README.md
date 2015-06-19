@@ -8,9 +8,9 @@ or download and include the ezPdo.php file in your project
 ##Usage
 Create new SimplePDO instance or use the existing one:
 
-	use Sheijselaar\EzPdo\EzPdo;
+	use SanderHeijselaar\EzPdo\EzPdo;
 
-    $dbh = new ezPdo(
+    $dbh = new EzPdo(
 		EzPdo::DB_TYPE_MYSQL, 
 		'localhost', 
 		'db_name', 
@@ -19,7 +19,9 @@ Create new SimplePDO instance or use the existing one:
 
 Drop an existing table:
 
-    DROP TABLE IF EXISTS `person`;
+    $sql = "
+        DROP TABLE IF EXISTS `person`;
+    ";
 
     $result = $dbh->update($sql,array());
     var_export($result);

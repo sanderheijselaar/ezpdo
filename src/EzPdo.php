@@ -4,7 +4,7 @@ namespace SanderHeijselaar\EzPdo;
 /**
  * ezPDO is a class for easy & save DB access
  *
- * @version 0.1.2
+ * @version 0.1.3
  */
 class EzPdo
 {
