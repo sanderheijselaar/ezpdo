@@ -167,7 +167,23 @@ Make a query that throws an EzPdoException:
 	
 	    $result = $dbh->getVar($sql, $sqlData);
 	    var_export($result);
-	} catch (Sheijselaar\EzPdo\EzPdoException $ex) {
+	} catch (SanderHeijselaar\EzPdo\EzPdoException $ex) {
+	    var_export($ex->getMessage());
+	}
+
+Get the parsed query. Only use this for debugging queries:
+
+	try {
+	    $sql = "
+	        SELECT `phone` FROM `ERROR` WHERE `id` = :id;
+	    ";
+	    $sqlData = array(
+	        'id'    => 1,
+	    );
+	
+	    $result = $dbh->returnParsedQuery($sql, $sqlData);
+	    echo $result;
+	} catch (SanderHeijselaar\EzPdo\EzPdoException $ex) {
 	    var_export($ex->getMessage());
 	}
 

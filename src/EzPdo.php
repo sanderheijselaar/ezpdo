@@ -287,6 +287,31 @@ class EzPdo
     }
 
     /**
+     * Method
+     *
+     * @param type $query
+     * @param type $params
+     */
+    public function returnParsedQuery($query, $params)
+    {
+        $this->preProcessParamsArray($query, $params);
+
+        foreach($params as $param_name => $param_value)
+        {
+            if (is_int($param_value))
+            {
+                $query = str_replace(':' . $param_name, $params[$param_name], $query);
+            }
+            else
+            {
+                $query = str_replace(':' . $param_name, "'" . str_replace("'", "\'", $params[$param_name]) . "'", $query);
+            }
+        }
+
+        return $query;
+    }
+
+    /**
      * Set the class up to dump errors
      */
     public function dumpErrors()

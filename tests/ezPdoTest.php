@@ -162,6 +162,44 @@ class EzPdoTest extends PHPUnit_Framework_TestCase
         $this->dbh->getVar($sql, $sqlData);
     }
 
+    public function testReturnParsedQuery()
+    {
+        // Int test
+        $expected = "SELECT `phone` FROM `person` WHERE `id` = 1;";
+
+        $sql = "SELECT `phone` FROM `person` WHERE `id` = :id;";
+        $sqlData = array(
+            'id'    => 1,
+        );
+
+        $actual = $this->dbh->returnParsedQuery($sql, $sqlData);
+
+        $this->assertEquals($expected, $actual, "testReturnParsedQuery() didn't return the expected string");
+
+        // String test
+        $expected = "SELECT `id` FROM `person` WHERE `name` = 'sander\'s';";
+
+        $sql = "SELECT `id` FROM `person` WHERE `name` = :name;";
+        $sqlData = array(
+            'name' => "sander's",
+        );
+
+        $actual = $this->dbh->returnParsedQuery($sql, $sqlData);
+
+        $this->assertEquals($expected, $actual, "testReturnParsedQuery() didn't return the expected string (2)");
+
+        // Array test
+        $expected = "SELECT * FROM `person` WHERE `id` IN (1, '2');";
+        
+        $sql = "SELECT * FROM `person` WHERE `id` IN (:ids);";
+        $sqlData = array(
+            'ids' => array(1,'2'),
+        );
+
+        $actual = $this->dbh->returnParsedQuery($sql, $sqlData);
+
+        $this->assertEquals($expected, $actual, "testReturnParsedQuery() didn't return the expected string (3)");
+    }
 
     /**
      * SetUp & TearDown
