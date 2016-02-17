@@ -201,6 +201,57 @@ class EzPdoTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual, "testReturnParsedQuery() didn't return the expected string (3)");
     }
 
+    public function testCacheResults()
+    {
+        $this->dbh->cacheResults(true);
+
+        $sql = "
+            SELECT
+                *
+            FROM
+                `person`
+            WHERE
+                `id` = 1;
+        ";
+
+        $actual = $this->dbh->getRow($sql, array());
+        $expected = array(
+            'id' => '1',
+            'name' => 'Simon',
+            'email' => 'simon@simon.com',
+            'phone' => '+31612345678',
+        );
+
+        $this->assertEquals($expected, $actual, "testCacheResults() didn't return the expected data");
+
+        // Update the data
+        $sqlUpdate = "
+            UPDATE
+                `person`
+            SET
+                `phone` = :phone
+            WHERE
+                `id` = :id
+        ";
+        $sqlData = array(
+            'id'    => 1,
+            'phone' => '+31688888888',
+        );
+        $this->dbh->update($sqlUpdate, $sqlData);
+
+        // See if the results still come from cache
+        $actual = $this->dbh->getRow($sql, array());
+
+        $this->assertEquals($expected, $actual, "testCacheResults() didn't cache the expected data");
+
+        $this->dbh->cacheResults(false);
+
+        // See if the row in the DB was updated
+        $expected['phone'] = $sqlData['phone'];
+        $actual = $this->dbh->getRow($sql, array());
+        $this->assertEquals($expected, $actual, "testCacheResults() didn't return the expected data (2)");
+    }
+
     /**
      * SetUp & TearDown
      */

@@ -4,7 +4,7 @@ namespace SanderHeijselaar\EzPdo;
 /**
  * ezPDO is a class for easy & save DB access
  *
- * @version 0.1.3
+ * @version 0.2.0
  */
 class EzPdo
 {
@@ -27,6 +27,9 @@ class EzPdo
     protected $last_params;
 
     protected $errorHandling;
+
+    protected $cachedResults = array();
+    protected $cacheResults = false;
 
     const DB_TYPE_MYSQL      = 'mysql';
     const DB_TYPE_SQLITLE    = 'sqlite';
@@ -211,7 +214,7 @@ class EzPdo
         {
             $this->handleErrors();
         }
-        
+
         $results = array();
         if (!empty ($this->result[0][$colindex]))
         {
@@ -273,7 +276,7 @@ class EzPdo
             {
                 return false;
             }
-            
+
             $counter = 0;
             foreach($this->result[$rownr] as $col)
             {
@@ -283,6 +286,21 @@ class EzPdo
                 }
                 $counter++;
             }
+        }
+    }
+
+    /**
+     * Function for setting the cache on or off.
+     *
+     * @param boolean $bool
+     */
+    public function cacheResults($bool)
+    {
+        $this->cacheResults = (bool) $bool;
+
+        // Clear cache when cache is turned off
+        if ($this->cacheResults === false) {
+            $this->cachedResults = array();
         }
     }
 
@@ -404,7 +422,14 @@ class EzPdo
     {
         // Need a local instance of the class var
         $PDO =& $this->PDO;
-        
+
+        // Check if cache is enabled and if the result is already in cache
+        if ($this->cacheResults === true && array_key_exists(md5($query . serialize($params)), $this->cachedResults) === true) {
+            $this->result = $this->cachedResults[md5($query . serialize($params))];
+            return true;
+        }
+
+
         // Select queries
         if ($query == $this->last_query && serialize($params) == $this->last_params)
         {
@@ -450,6 +475,11 @@ class EzPdo
         // Keep track of the last query for debug..
         $this->last_query  = $query;
         $this->last_params = serialize($params);
+
+        // Cache results when caching is enabled
+        if ($this->cacheResults === true) {
+            $this->cachedResults[md5($query . serialize($params))] = $this->result;
+        }
 
         return true;
 
@@ -577,7 +607,7 @@ class EzPdo
     protected function handleErrors()
     {
         list($file, $line) = $this->getBacktrace();
-        
+
         if ($this->errorHandling === self::ERROR_HANDLING_THROW) {
             throw new EzPdoException($file . ':' . $line . "\n" . $this->lastError);
         }
