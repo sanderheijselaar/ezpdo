@@ -18,6 +18,7 @@ class EzPdo
     protected $dbuser;
     protected $dbpassword;
     protected $dbcharset;
+    protected $dbpersistent;
 
     protected $result;
     protected $lastError;
@@ -46,17 +47,19 @@ class EzPdo
      * @param string $dbname name of the database.
      * @param string $dbuser name of the database user
      * @param string $dbpassword password of the database user
+     * @param bool   $dbpersistent Create a persistent connection or not
      * @param string $dbcharset charset of the database connection. utf8, latin1 etc
      */
-    public function __construct($dbtype, $dbhost, $dbname, $dbuser, $dbpassword, $dbcharset='utf8', $PDO='PDO')
+    public function __construct($dbtype, $dbhost, $dbname, $dbuser, $dbpassword, $dbpersistent=false, $dbcharset='utf8', $PDO='PDO')
     {
-        $this->PDO        = $PDO;
-        $this->dbtype     = strtolower($dbtype);
-        $this->dbhost     = $dbhost;
-        $this->dbname     = $dbname;
-        $this->dbuser     = $dbuser;
-        $this->dbpassword = $dbpassword;
-        $this->dbcharset  = $dbcharset;
+        $this->PDO          = $PDO;
+        $this->dbtype       = strtolower($dbtype);
+        $this->dbhost       = $dbhost;
+        $this->dbname       = $dbname;
+        $this->dbuser       = $dbuser;
+        $this->dbpassword   = $dbpassword;
+        $this->dbpersistent = (bool) $dbpersistent;
+        $this->dbcharset    = $dbcharset;
 
         $this->errorHandling = self::ERROR_HANDLING_THROW;
 
@@ -374,7 +377,10 @@ class EzPdo
 
             try
             {
-                $this->dbh = new $PDO($this->dbtype . ':host=' . $this->dbhost . ';dbname=' . $this->dbname, $this->dbuser, $this->dbpassword);
+                $driverOption = array();
+                $driverOption[$PDO::ATTR_PERSISTENT] = $this->dbpersistent;
+
+                $this->dbh = new $PDO($this->dbtype . ':host=' . $this->dbhost . ';dbname=' . $this->dbname, $this->dbuser, $this->dbpassword, $driverOption);
                 $this->dbh->setAttribute($PDO::ATTR_ERRMODE, $PDO::ERRMODE_EXCEPTION);
 
                 $this->query('SET NAMES :dbcharset;', array('dbcharset' => $this->dbcharset), 'update');
@@ -450,6 +456,7 @@ class EzPdo
         catch(\PDOException $e)
         {
             $this->lastError = $e->getmessage();
+            $stmt = null;
 
             return false;
         }
@@ -464,6 +471,7 @@ class EzPdo
         }
         catch(\PDOException $e)
         {
+            $stmt = null;
             $this->lastError = $e->getmessage();
 
             return false;
@@ -481,9 +489,9 @@ class EzPdo
             $this->cachedResults[md5($query . serialize($params))] = $this->result;
         }
 
+        $stmt = null;
+
         return true;
-
-
     }
 
     /**
