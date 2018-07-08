@@ -4,7 +4,7 @@ namespace SanderHeijselaar\EzPdo;
 /**
  * ezPDO is a class for easy & save DB access
  *
- * @version 0.2.0
+ * @version 0.3.0
  */
 class EzPdo
 {
@@ -224,22 +224,22 @@ class EzPdo
             return $this->result[0][$colindex];
         }
         else
-        if (count($this->result) > $colindex)
-        {
-            $counter = 0;
-            foreach (array_keys($this->result[0]) as $colname)
+            if (count($this->result) > $colindex)
             {
-                if ($counter == $colindex)
+                $counter = 0;
+                foreach (array_keys($this->result[0]) as $colname)
                 {
-                    $colindex = $colname;
+                    if ($counter == $colindex)
+                    {
+                        $colindex = $colname;
+                    }
+                    $counter++;
                 }
-                $counter++;
             }
-        }
-        else
-        {
-            return $results;
-        }
+            else
+            {
+                return $results;
+            }
 
         foreach ($this->result as $row)
         {
@@ -275,10 +275,10 @@ class EzPdo
                 return $this->result[$rownr][$colindex];
             }
             else
-            if (count($this->result[$rownr]) < $colindex)
-            {
-                return false;
-            }
+                if (count($this->result[$rownr]) < $colindex)
+                {
+                    return false;
+                }
 
             $counter = 0;
             foreach($this->result[$rownr] as $col)
@@ -322,11 +322,15 @@ class EzPdo
             if (is_int($param_value))
             {
                 $query = str_replace(':' . $param_name, $params[$param_name], $query);
-            }
-            else
-            {
-                $query = str_replace(':' . $param_name, "'" . str_replace("'", "\'", $params[$param_name]) . "'", $query);
-            }
+            } else
+                if (is_null($param_value))
+                {
+                    $query = str_replace(':' . $param_name, 'NULL', $query);
+                }
+                else
+                {
+                    $query = str_replace(':' . $param_name, "'" . str_replace("'", "\'", $params[$param_name]) . "'", $query);
+                }
         }
 
         return $query;
@@ -595,11 +599,15 @@ class EzPdo
                 if (is_int($param_value))
                 {
                     $stmt->bindParam(':' . $param_name, $params[$param_name], $PDO::PARAM_INT);
-                }
-                else
-                {
-                    $stmt->bindParam(':' . $param_name, $params[$param_name], $PDO::PARAM_STR);
-                }
+                } else
+                    if (is_null($param_value))
+                    {
+                        $stmt->bindParam(':' . $param_name, $params[$param_name], $PDO::PARAM_NULL);
+                    }
+                    else
+                    {
+                        $stmt->bindParam(':' . $param_name, $params[$param_name], $PDO::PARAM_STR);
+                    }
             }
         }
         catch(\PDOException $e)
@@ -625,7 +633,7 @@ class EzPdo
 
     protected function getBacktrace()
     {
-    	$data = debug_backtrace();
+        $data = debug_backtrace();
         array_shift($data);
         array_shift($data);
         return array($data[0]['file'], $data[0]['line']);
